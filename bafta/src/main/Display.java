@@ -1,10 +1,15 @@
 package bafta.src.main;
 
 import java.awt.Canvas;
+import java.awt.Graphics;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
 import bafta.src.main.render.Render;
+import bafta.src.main.render.Screen;
 
 
 public class Display extends Canvas implements Runnable {
@@ -18,11 +23,17 @@ public class Display extends Canvas implements Runnable {
 	
 	private Thread thread;
 	private boolean running = false;
+	private BufferedImage img;
+	private int[] pixels;
+	private Screen screen;
 	private Render render;
 	
 	public Display()
 	{
-		render = new Render(WIDTH, HEIGHT);
+		screen = new Screen(WIDTH, HEIGHT);
+		img = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+		pixels = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
+		
 	}
 	
 	private void Start()
@@ -40,7 +51,6 @@ public class Display extends Canvas implements Runnable {
 		try {
 			thread.join();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(0);
 			}
@@ -49,19 +59,36 @@ public class Display extends Canvas implements Runnable {
 	public void running(){
 	{ 
 		while (running);
-		tick();
 		render();
+		tick();
 		
 	}
 	}
 	
-	private void render() {
-		// TODO Auto-generated method stub
+	private void tick() 
+	{
 		
 	}
+	private void render() 
+	{
+		BufferStrategy bs = this.getBufferStrategy();
+		if(bs == null) 
+		{
+			screen.render();
+			createBufferStrategy(3);
+			return;
+		}
 
-	private void tick() {
-		// TODO Auto-generated method stub
+		
+		for (int i = 0; i<WIDTH * HEIGHT; i++)
+		{
+			pixels[i] = screen.pixels[i];
+		}
+		
+		Graphics g = bs.getDrawGraphics();
+		g.drawImage(img, 0, 0, WIDTH, HEIGHT, null);
+		bs.show();
+		g.dispose();
 		
 	}
 
@@ -86,7 +113,6 @@ public class Display extends Canvas implements Runnable {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		
 	}
 		
